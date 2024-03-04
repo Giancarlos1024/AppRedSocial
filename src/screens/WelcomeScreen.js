@@ -1,4 +1,3 @@
-// WelcomeScreen.js
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -13,14 +12,14 @@ const WelcomeScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>NexusFlow</Text>
-      <Image source={require('../../assets/perfil.jpeg')} style={styles.photo} />
+      <Image source={require('../../assets/logoApp.png')} style={styles.photo} />
       <TouchableOpacity style={styles.startButton} onPress={handleStart}>
         <Text style={styles.startButtonText}>Empezar</Text>
       </TouchableOpacity>
       <View style={styles.signupContainer}>
         <Text style={styles.signupText}>¿No tienes una cuenta?</Text>
         <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-          <Text style={styles.linkText}>Regístrate aquí</Text>
+          <Text style={styles.linkText}>Regístrate</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -30,18 +29,21 @@ const WelcomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'center', // Centrar verticalmente
     alignItems: 'center',
   },
   title: {
     fontSize: 40,
+    color:'#0BBCF3',
     fontWeight: 'bold',
     marginBottom: 20,
   },
   startButton: {
-    backgroundColor: '#3498db',
+    backgroundColor: 'black',
     borderRadius: 8,
-    padding: 12,
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    marginTop: 20,
   },
   startButtonText: {
     color: 'white',
@@ -49,22 +51,22 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   signupContainer: {
-    marginTop: 20, // Ajusta el espaciado según sea necesario
+    marginTop: 20,
     alignItems: 'center',
   },
   signupText: {
     fontSize: 16,
   },
   linkText: {
-    color: '#3498db',
+    color: '#FD0505',
     fontSize: 16,
     fontWeight: 'bold',
   },
   photo: {
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    marginVertical: 16,
+    width: 200, // Reducir el tamaño de la foto
+    height: 200,
+    borderRadius: 100, // Ajustar el borde para que sea circular
+    marginVertical: 20, // Reducir el margen vertical
   },
 });
 

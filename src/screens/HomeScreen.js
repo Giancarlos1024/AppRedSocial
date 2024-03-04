@@ -8,7 +8,7 @@ import NewPost from './NewPost';
 const HomeScreen = ({ route }) => {
   const navigation = useNavigation();
 
-  const { username } = route.params || {};
+  const { userID, username } = route.params || {};
   // console.log('Nombre de usuario:', username);
 
   const [data, setData] = useState([
@@ -28,34 +28,34 @@ const HomeScreen = ({ route }) => {
   };
 
   const onPublish = () => {
-    axios
-      .post('http://192.168.56.1:3000/posts', {
-        UserID: 1,
-        Contenido: newPost.post,
-        Username: newPost.username,
-      })
-      .then((response) => {
-        console.log('Publicación creada exitosamente:', response.data);
-        // Crear la nueva publicación con todos los detalles necesarios
-        const newPublication = {
-          id: response.data.id,
-          username: newPost.username,
-          post: newPost.post,
-          image: newPost.image,
-          likes: 0,
-          comments: [],
-          isActive: true,
-        };
-        // Actualizar el estado data agregando la nueva publicación
-        setData((prevData) => [newPublication, ...prevData]);
-      })
-      .catch((error) => {
-        console.error('Error al crear publicación:', error.response);
-      });
+  axios
+    .post('http://192.168.56.1:3000/posts', {
+      UserID: userID, // Usar el ID de usuario obtenido del parámetro de ruta
+      Contenido: newPost.post,
+      Username: newPost.username,
+    })
+    .then((response) => {
+      console.log('Publicación creada exitosamente:', response.data);
+      // Crear la nueva publicación con todos los detalles necesarios
+      const newPublication = {
+        id: response.data.id,
+        username: newPost.username,
+        post: newPost.post,
+        image: newPost.image,
+        likes: 0,
+        comments: [],
+        isActive: true,
+      };
+      // Actualizar el estado data agregando la nueva publicación
+      setData((prevData) => [newPublication, ...prevData]);
+    })
+    .catch((error) => {
+      console.error('Error al crear publicación:', error.response);
+    });
   
-    // Limpiar el estado de newPost después de publicar
-    setNewPost({ username: username, post: '', image: null });
-  };
+  // Limpiar el estado de newPost después de publicar
+  setNewPost({ username: username, post: '', image: null });
+};
   
 
   const handleLike = (postId) => {
@@ -145,10 +145,10 @@ const HomeScreen = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.welcomeText}>Bienvenido a la Red Social</Text>
+      <Text style={styles.welcomeText}>Bienvenido a NexusFlow</Text>
 
       <View style={styles.menuContainer}>
-        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Profile')}>
+        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Profile', { userID })}>
           <Icon name="user" size={20} color="#3498db" />
           <Text style={styles.menuText}>Perfil</Text>
         </TouchableOpacity>
@@ -204,6 +204,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     marginBottom: 16,
     fontWeight: 'bold',
+    textAlign:'center'
   },
   postContainer: {
     marginBottom: 16,

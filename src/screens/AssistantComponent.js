@@ -31,48 +31,38 @@ const AssistantComponent = () => {
   };
 
   useEffect(() => {
-    // Desplazar hacia abajo cuando se agrega un nuevo mensaje
     scrollViewRef.current.scrollToEnd({ animated: true });
   }, [messages]);
 
   return (
-    // Usa ImageBackground en lugar de View para establecer una imagen de fondo
     <ImageBackground source={require('../../assets/fondoglobal.jpg')} style={styles.backgroundImage}>
       <View style={styles.container}>
-        {/* Agrega un componente Image para la imagen del chatbot */}
-        {/* <Image source={require('../../assets/asimo.jpg')} style={styles.chatbotImage} /> */}
-
         <ScrollView
           ref={scrollViewRef}
           style={styles.messagesContainer}
           contentContainerStyle={styles.messagesContent}>
           {messages.map((message) => (
             <View
-            key={message.id}
-            style={[
-              styles.message,
-              message.fromUser ? styles.userMessage : styles.chatbotMessage,
-              message.isQuestion ? styles.questionMessage : null,
-              message.isAnswer ? styles.answerMessage : null,
-            ]}>
-            <View style={styles.messageContent}>
-              {message.fromUser && (
-                <Image
-                  source={require('../../assets/perfil.jpeg')} // Ruta de la imagen del usuario
-                  style={styles.iconImage}
-                />
-              )}
-              {message.fromUser || (
-                <Image
-                  source={require('../../assets/asimo.jpg')} // Ruta de la imagen del chatbot
-                  style={styles.iconImage}
-                />
-              )}
-              <Text style={[styles.messageText, message.isQuestion ? styles.questionText : null]}>
-                {message.text}
-              </Text>
+              key={message.id}
+              style={[
+                styles.message,
+                message.fromUser ? styles.userMessage : styles.chatbotMessage,
+              ]}>
+              <View style={styles.messageContent}>
+                {message.fromUser ? (
+                  <Image
+                    source={require('../../assets/perfil.jpeg')}
+                    style={styles.iconImage}
+                  />
+                ) : (
+                  <Image
+                    source={require('../../assets/asimo.jpg')}
+                    style={styles.iconImage}
+                  />
+                )}
+                <Text style={styles.messageText}>{message.text}</Text>
+              </View>
             </View>
-          </View>
           ))}
         </ScrollView>
         {questionsAndAnswers.map((qa) => (
@@ -102,37 +92,24 @@ const AssistantComponent = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     padding: 16,
     borderRadius: 16,
     margin: 16,
-    overflow: 'hidden',
   },
   backgroundImage: {
     flex: 1,
     resizeMode: 'cover',
     justifyContent: 'center',
   },
-  chatbotImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 16,
-  },
-  iconImage: {
-    width: 20, // Doble del tamaño original para hacerla redonda
-    height: 20, // Doble del tamaño original para hacerla redonda
-    borderRadius: 10, // Mitad del ancho y alto para hacerla redonda
-  },
   messagesContainer: {
     flex: 1,
-    marginBottom: 8,
   },
   messagesContent: {
     paddingBottom: 16,
   },
   message: {
-    maxWidth: '90%',
+    maxWidth: '80%',
     borderRadius: 8,
     padding: 10,
     marginBottom: 8,
@@ -149,26 +126,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#3498db',
   },
   chatbotMessage: {
-    backgroundColor: 'green',
-    paddingHorizontal:20,
-  },
-  questionMessage: {
-    backgroundColor: '#3498db',
-  },
-  answerMessage: {
-    backgroundColor: '#2ecc71',
-  },
-  questionText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    backgroundColor: '#27ae60',
   },
   messageText: {
-    color: '#000',
+    color: '#fff',
     marginLeft: 8,
+  },
+  iconImage: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 16,
   },
   input: {
     flex: 1,
@@ -181,7 +153,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   sendButton: {
-    backgroundColor: 'black',
+    backgroundColor: '#2ecc71',
     padding: 8,
     borderRadius: 8,
   },

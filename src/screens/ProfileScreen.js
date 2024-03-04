@@ -1,53 +1,123 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import axios from 'axios';
+import * as ImagePicker from 'expo-image-picker';
 
-const ProfileScreen = ({ navigation }) => {
+const ProfileScreen = ({ navigation, route }) => {
   const [userData, setUserData] = useState(null);
-
-  // Reemplaza 'url_de_la_imagen' con la URL real de la imagen de tu perfil
-  const profileImageUrl = require('../../assets/perfil.jpeg');
+  const [profileImage, setProfileImage] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const userID = 4; // Cambia esto según tu lógica de autenticación
+    const { userID } = route.params;
+    console.log('userID:', userID); // Verifica si se está obteniendo correctamente el userID de los route.params
+    
+    if (userID) {
+      axios
+        .get(`http://192.168.56.1:3000/user/${userID}`)
+        .then((response) => {
+          setUserData(response.data);
+          setLoading(false); // Actualizar el estado de loading después de obtener los datos del usuario
+        })
+        .catch((error) => {
+          console.error('Error al obtener detalles del usuario:', error.response);
+          setLoading(false); // Asegurar que se actualice el estado de loading en caso de error
+        });
+    }
+  }, [route.params]);
 
-    axios
-      .get(`http://192.168.56.1:3000/user/${userID}`)
-      .then((response) => {
-        setUserData(response.data);
-      })
-      .catch((error) => {
-        console.error('Error al obtener detalles del usuario:', error.response);
+  console.log('userData:', userData); // Agrega esta línea para verificar el estado actual de userData
+  
+  
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.cancelled) {
+      console.log('Imagen seleccionada:', result.uri); // Verifica si la imagen se seleccionó correctamente
+      setProfileImage(result.uri);
+      uploadProfileImage(result.uri);
+    }
+  };
+
+  const uploadProfileImage = async (imageUri) => {
+    try {
+      if (!userData) {
+        console.error('No se ha cargado userData todavía.');
+        return;
+      }
+  
+      const userID = userData.UserID; // Usar userData.UserID en lugar de userData.userID
+      console.log('userID:', userID); // Verifica si se está obteniendo correctamente el userID del userData
+  
+      const formData = new FormData();
+      formData.append('avatar', {
+        uri: imageUri,
+        name: 'avatar.jpg',
+        type: 'image/jpeg',
       });
-  }, []);
+  
+      const response = await axios.post(`http://192.168.56.1:3000/upload/avatar`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        params: {
+          userID: userID,
+        },
+      });
+  
+      console.log('Respuesta del servidor:', response.data);
+    } catch (error) {
+      console.error('Error al subir la imagen de perfil:', error);
+    }
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.profileInfo}>
-        {/* Agrega la imagen de perfil */}
-        <Image source={profileImageUrl} style={styles.profileImage} />
+        <TouchableOpacity onPress={pickImage}>
+          <Image source={profileImage ? { uri: profileImage } : require('../../assets/userApp.png')} style={styles.profileImage} />
+        </TouchableOpacity>
 
-        {/* Información del perfil */}
         {userData && (
           <View style={styles.userInfoContainer}>
             <Text style={styles.username}>{userData.Username}</Text>
             <Text style={styles.userDetails}>Email: {userData.Email}</Text>
             <Text style={styles.userDetails}>Nombre: {userData.Nombre}</Text>
             <Text style={styles.userDetails}>Apellido: {userData.Apellido}</Text>
-            {/* <Text style={styles.userDetails}>Password: {userData.Password}</Text> */}
-            {/* Agrega más campos según sea necesario */}
           </View>
         )}
       </View>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('EditProfile')}>
-          <Text style={styles.buttonText}>Editar Perfil</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.postsButton} onPress={() => navigation.navigate('UserPosts', { userID: userData.userID })}>
+      <TouchableOpacity
+        style={styles.editButton}
+        onPress={() => {
+          if (!loading && userData && userData.UserID) {
+            console.log("userID que se pasa a EditProfile:", userData.UserID);
+            navigation.navigate('EditProfile', { userID: userData.UserID });
+          } else {
+            console.log("Los datos del usuario aún no se han cargado o userID no está disponible.");
+          }
+        }}
+        disabled={loading}
+      >
+        <Text style={styles.buttonText}>Editar Perfil</Text>
+      </TouchableOpacity>
+
+
+
+
+
+
+        <TouchableOpacity style={styles.postsButton} onPress={() => navigation.navigate('UserPosts', { userID: userData.UserID })}>
           <Text style={styles.buttonText}>Ver Publicaciones</Text>
         </TouchableOpacity>
-
       </View>
     </View>
   );

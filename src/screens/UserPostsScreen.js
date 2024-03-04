@@ -47,36 +47,40 @@ const UserPostsScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#fff',
     padding: 20,
   },
   postList: {
-    width: '100%',
+    flex: 1,
   },
   postItem: {
-    backgroundColor: '#ecf0f1',
+    backgroundColor: '#f0f0f0',
     padding: 20,
-    marginBottom: 10,
-    borderRadius: 5,
+    marginBottom: 20,
+    borderRadius: 10,
   },
   username: {
     fontWeight: 'bold',
     marginBottom: 5,
+    fontSize: 16,
+    color: '#333',
   },
   postContent: {
-    fontSize: 16,
+    fontSize: 14,
     marginBottom: 10,
+    color: '#555',
   },
   detailsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   likes: {
-    color: 'blue',
+    color: '#3498db',
+    fontSize: 12,
   },
   comments: {
-    color: 'green',
+    color: '#27ae60',
+    fontSize: 12,
   },
 });
 

@@ -1,6 +1,9 @@
 const express = require('express');
 const sql = require('mssql');
 const cors = require('cors');
+const multer = require('multer'); // Agrega esta línea para importar Multer
+const path = require('path');
+const fs = require('fs');
 const app = express();
 const PORT = 3000;
 
@@ -18,6 +21,25 @@ const config = {
 
 app.use(express.json());
 app.use(cors());
+
+
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/') // Directorio donde se guardarán las imágenes de perfil
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname)) // Renombrar la imagen con un nombre único
+  }
+});
+
+const upload = multer({ storage: storage });
+
+
+
+
+
+
 
 // ENDOPOINT REGISTRO
 
@@ -78,9 +100,6 @@ app.post('/signin', async (req, res) => {
   }
 });
 
-
-// ENDOPOINT  DE PUBLICACION GET
-
 // ENDOPOINT  DE PUBLICACION GET
 app.get('/posts', async (req, res) => {
   try {
@@ -128,9 +147,6 @@ app.post('/posts', async (req, res) => {
     }
   }
 });
-
-
-
 
 // Endpoint para agregar un "Me gusta" a una publicación específica
 app.post('/posts/:postID/like', async (req, res) => {
@@ -180,9 +196,28 @@ app.post('/posts/:postID/comment', async (req, res) => {
 });
 
 
+// ENDOPOINT PARA OBTENER LA LISTA DE USUARIOS
+app.get('/users', async (req, res) => {
+  try {
+    // Conectar a la base de datos
+    await sql.connect(config);
+
+    // Obtener la lista de usuarios
+    const result = await sql.query`SELECT UserID, Username, Avatar FROM Usuarios`;
+
+    // Cerrar la conexión
+    await sql.close();
+
+    // Enviar la lista de usuarios
+    res.json(result.recordset);
+  } catch (error) {
+    console.error('Error al obtener la lista de usuarios:', error);
+    res.status(500).json({ error: 'Error en el servidor.' });
+  }
+});
+
 
 // ENDOPOINT  DE PERFIL GET
-
 app.get('/user/:userID', async (req, res) => {
   try {
     const userID = req.params.userID;
@@ -192,6 +227,7 @@ app.get('/user/:userID', async (req, res) => {
 
     // Obtener detalles del usuario por UserID
     const userResult = await sql.query`SELECT * FROM Usuarios WHERE UserID = ${userID}`;
+    console.log('Resultado de la consulta SQL:', userResult); // Agrega esta línea para imprimir el resultado de la consulta SQL
 
     // Cerrar la conexión
     await sql.close();
@@ -237,6 +273,56 @@ app.put('/user/:userID', async (req, res) => {
     res.status(500).json({ error: 'Error en el servidor.' });
   }
 });
+
+// ENDPOINT PARA AGREGAR UN AMIGO
+app.post('/addfriend', async (req, res) => {
+  try {
+    const { userID, friendID } = req.body;
+
+    // Conectar a la base de datos
+    await sql.connect(config);
+
+    // Verificar si ya son amigos
+    const checkFriendship = await sql.query`SELECT * FROM Amigos WHERE UserID = ${userID} AND FriendID = ${friendID}`;
+    if (checkFriendship.recordset.length > 0) {
+      // Ya son amigos
+      res.status(400).json({ error: 'Este usuario ya es tu amigo.' });
+      return;
+    }
+
+    // Agregar la amistad
+    await sql.query`INSERT INTO Amigos (UserID, FriendID) VALUES (${userID}, ${friendID})`;
+
+    // Cerrar la conexión
+    await sql.close();
+
+    res.json({ message: 'Usuario agregado como amigo exitosamente.' });
+  } catch (error) {
+    console.error('Error al agregar amigo:', error);
+    res.status(500).json({ error: 'Error en el servidor.' });
+  }
+});
+
+// Endpoint para la carga de imágenes de perfil
+app.post('/upload/avatar', upload.single('avatar'), (req, res) => {
+  try {
+    // Obtener la ruta de la imagen subida
+    const imagePath = req.file.path;
+
+    // Aquí debes implementar la lógica para guardar la imagen en el servidor
+    // Por ejemplo, puedes mover la imagen a un directorio específico
+    const destinationPath = 'path/to/destination/directory';
+    fs.renameSync(imagePath, path.join(destinationPath, req.file.filename));
+
+    res.json({ success: true, message: 'Imagen de perfil subida correctamente.' });
+  } catch (error) {
+    console.error('Error al subir la imagen de perfil:', error);
+    res.status(500).json({ success: false, message: 'Error en el servidor.' });
+  }
+});
+
+
+
 
 
 
