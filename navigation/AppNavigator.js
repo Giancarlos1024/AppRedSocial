@@ -10,6 +10,7 @@ import WelcomeScreen from '../src/screens/WelcomeScreen'; // Agrega la importaci
 import AssistantComponent from '../src/screens/AssistantComponent';
 import EditProfileScreen from '../src/screens/EditProfileScreen';
 import UserPostsScreen from '../src/screens/UserPostsScreen';
+import ChatScreen from '../src/screens/ChatScreen';
 
 const Stack = createStackNavigator();
 
@@ -25,6 +26,7 @@ const AppNavigator = () => {
       <Stack.Screen name="Assistant" component={AssistantComponent} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="UserPosts" component={UserPostsScreen} />
+      <Stack.Screen name="Chat" component={ChatScreen} />
     </Stack.Navigator>
   );
 };

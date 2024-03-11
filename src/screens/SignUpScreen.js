@@ -13,7 +13,7 @@ const SignUpScreen = ({ navigation }) => {
     try {
       console.log('Iniciando registro...');
       //'http://192.168.56.1:3000/signup'
-      const response = await axios.post('http://192.168.56.1:3000/signup', {
+      const response = await axios.post('http://192.168.56.1:3000/auth/signup', {
         Username,
         Password,
         Email,

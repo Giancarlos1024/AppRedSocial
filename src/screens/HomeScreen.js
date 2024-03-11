@@ -28,35 +28,34 @@ const HomeScreen = ({ route }) => {
   };
 
   const onPublish = () => {
-  axios
-    .post('http://192.168.56.1:3000/posts', {
-      UserID: userID, // Usar el ID de usuario obtenido del parámetro de ruta
-      Contenido: newPost.post,
-      Username: newPost.username,
-    })
-    .then((response) => {
-      console.log('Publicación creada exitosamente:', response.data);
-      // Crear la nueva publicación con todos los detalles necesarios
-      const newPublication = {
-        id: response.data.id,
-        username: newPost.username,
-        post: newPost.post,
-        image: newPost.image,
-        likes: 0,
-        comments: [],
-        isActive: true,
-      };
-      // Actualizar el estado data agregando la nueva publicación
-      setData((prevData) => [newPublication, ...prevData]);
-    })
-    .catch((error) => {
-      console.error('Error al crear publicación:', error.response);
-    });
-  
-  // Limpiar el estado de newPost después de publicar
-  setNewPost({ username: username, post: '', image: null });
-};
-  
+    axios
+      .post('http://192.168.56.1:3000/posts/posts', {
+        UserID: userID, // Usar el ID de usuario obtenido del parámetro de ruta
+        Contenido: newPost.post,
+        Username: newPost.username,
+      })
+      .then((response) => {
+        console.log('Publicación creada exitosamente:', response.data);
+        // Crear la nueva publicación con todos los detalles necesarios
+        const newPublication = {
+          id: response.data.id,
+          username: newPost.username,
+          post: newPost.post,
+          image: newPost.image,
+          likes: 0,
+          comments: [],
+          isActive: true,
+        };
+        // Actualizar el estado data agregando la nueva publicación
+        setData((prevData) => [newPublication, ...prevData]);
+      })
+      .catch((error) => {
+        console.error('Error al crear publicación:', error.response);
+      });
+    
+    // Limpiar el estado de newPost después de publicar
+    setNewPost({ username: username, post: '', image: null });
+  };
 
   const handleLike = (postId) => {
     const updatedData = data.map((post) => {
@@ -142,7 +141,33 @@ const HomeScreen = ({ route }) => {
 
     setData(updatedData);
   };
+  
+  const getFriendID = async (userID, friendUsername) => {
+    try {
+      // Consultar la base de datos para obtener el friendID del amigo seleccionado
+      const response = await axios.get(`http://192.168.56.1:3000/messages/${userID}/${friendUsername}`);
+      // Supongamos que la respuesta contiene el friendID del amigo seleccionado
+      return response.data.friendID;
+    } catch (error) {
+      console.error('Error al obtener friendID:', error);
+      return null;
+    }
+  };
+    
+  // Función para navegar a la pantalla de chat con el friendID
+  const navigateToChat = async (friendUsername) => {
+    const friendID = await getFriendID(userID, friendUsername); // Obtener el friendID del amigo seleccionado
+    if (friendID) {
+      navigation.navigate('Chat', { friendID });
+    } else {
+      console.error('No se pudo obtener el friendID.');
+    }
+  };
 
+  const handleLogout = () => {
+    navigation.navigate('SignIn'); // Reemplaza 'SignIn' con el nombre de tu pantalla de inicio de sesión
+  };
+  
   return (
     <View style={styles.container}>
       <Text style={styles.welcomeText}>Bienvenido a NexusFlow</Text>
@@ -152,7 +177,7 @@ const HomeScreen = ({ route }) => {
           <Icon name="user" size={20} color="#3498db" />
           <Text style={styles.menuText}>Perfil</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Explore')}>
+        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Explore',{ userID })}>
           <Icon name="search" size={20} color="#3498db" />
           <Text style={styles.menuText}>Explorar</Text>
         </TouchableOpacity>
@@ -160,6 +185,11 @@ const HomeScreen = ({ route }) => {
           <Icon name="comments" size={20} color="#3498db" />
           <Text style={styles.menuText}>Asistente</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+          <Icon name="sign-out" size={20} color="#3498db" />
+          <Text style={styles.menuText}>Cerrar sesión</Text>
+        </TouchableOpacity>
+
       </View>
 
       <NewPost newPost={newPost} onPostChange={onPostChange} onPublish={onPublish} />
@@ -190,9 +220,16 @@ const HomeScreen = ({ route }) => {
           </View>
         </View>
       </Modal>
+
+      
+      <TouchableOpacity style={styles.navigationButton2} onPress={() => navigateToChat(item.username)}>
+        <Text style={styles.navigationButtonText}>Ir al chat</Text>
+      </TouchableOpacity>
+
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

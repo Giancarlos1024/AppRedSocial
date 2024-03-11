@@ -8,7 +8,7 @@ const UserPostsScreen = ({ navigation, route }) => {
 
   useEffect(() => {
     axios
-      .get(`http://192.168.56.1:3000/posts?userID=${userID}`)
+      .get(`http://192.168.56.1:3000/posts/posts?userID=${userID}`)
       .then((response) => {
         setUserPosts(response.data);
       })

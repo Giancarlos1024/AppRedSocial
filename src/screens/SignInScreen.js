@@ -8,7 +8,7 @@ const SignInScreen = ({ navigation }) => {
 
   const handleSignIn = async () => {
     try {
-      const response = await axios.post('http://192.168.56.1:3000/signin', {
+      const response = await axios.post('http://192.168.56.1:3000/auth/signin', {
         Email,
         Password,
       });

@@ -14,7 +14,7 @@ const ProfileScreen = ({ navigation, route }) => {
     
     if (userID) {
       axios
-        .get(`http://192.168.56.1:3000/user/${userID}`)
+        .get(`http://192.168.56.1:3000/users/user/${userID}`)
         .then((response) => {
           setUserData(response.data);
           setLoading(false); // Actualizar el estado de loading después de obtener los datos del usuario
@@ -26,7 +26,7 @@ const ProfileScreen = ({ navigation, route }) => {
     }
   }, [route.params]);
 
-  console.log('userData:', userData); // Agrega esta línea para verificar el estado actual de userData
+  // console.log('userData:', userData); // Agrega esta línea para verificar el estado actual de userData
   
   
 

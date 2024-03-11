@@ -18,7 +18,7 @@ const EditProfileScreen = ({ navigation, route }) => {
     // console.log("userID en EditProfileScreen:", userID);
   
     axios
-      .get(`http://192.168.56.1:3000/user/${userID}`)
+      .get(`http://192.168.56.1:3000/users/user/${userID}`)
       .then((response) => {
         setUserData(response.data);
       })
@@ -31,7 +31,7 @@ const EditProfileScreen = ({ navigation, route }) => {
     const { userID } = route.params; // También aquí accedemos directamente a route.params
     console.log("....userID : ", userID);
     axios
-      .put(`http://192.168.56.1:3000/user/${userID}`, updatedUserData)
+      .put(`http://192.168.56.1:3000/users/user/${userID}`, updatedUserData)
       .then((response) => {
         console.log('Usuario actualizado exitosamente:', response.data);
         // Puedes redirigir a la pantalla de perfil u otra pantalla después de la actualización

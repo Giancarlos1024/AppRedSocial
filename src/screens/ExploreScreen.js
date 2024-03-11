@@ -1,74 +1,94 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator, TextInput, Alert } from 'react-native';
+import axios from 'axios';
 
-const ExploreScreen = () => {
+const ExploreScreen = ({ navigation, route }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [requestSent, setRequestSent] = useState([]);
+
+  const { userID } = route.params;
 
   useEffect(() => {
-    // Simular una pequeña demora antes de cargar los datos
-    const timer = setTimeout(() => {
-      const dummyUsers = [
-        { userID: 1, username: 'user1', avatar: require('../../assets/michael.jpg') },
-        { userID: 2, username: 'user2', avatar: require('../../assets/perfil.jpeg') },
-        { userID: 3, username: 'user3', avatar: require('../../assets/userApp.png') },
-      ];
-      setUsers(dummyUsers);
-      setLoading(false);
-    }, 1500);
-
-    // Limpiar el temporizador en la limpieza del efecto
-    return () => clearTimeout(timer);
+    axios.get('http://192.168.56.1:3000/users/users')
+      .then(response => {
+        const filteredUsers = response.data.filter(user => user.UserID !== userID);
+        const sortedUsers = filteredUsers.sort((a, b) => a.Username.localeCompare(b.Username));
+        setUsers(sortedUsers);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error al obtener usuarios:', error);
+        setLoading(false);
+      });
   }, []);
 
-  const addFriend = async (friendID) => {
-    try {
-      // Simulación de agregar amigo
-      console.log(`Agregando amigo con ID: ${friendID}`);
-    } catch (error) {
-      console.error('Error al agregar amigo:', error);
+  const handleSearch = () => {
+    const filteredUsers = users.filter(user =>
+      user.Username.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    return filteredUsers;
+  };
+
+  const handleSendRequest = (userId) => {
+    if (requestSent.includes(userId)) {
+      Alert.alert('Solicitud ya enviada', 'Ya has enviado una solicitud de amistad a este usuario.');
+    } else {
+      axios.post(`http://192.168.56.1:3000/users/addfriend`, { userID, friendID: userId })
+        .then(response => {
+          setRequestSent([...requestSent, userId]);
+          Alert.alert('Solicitud enviada', 'Tu solicitud de amistad ha sido enviada exitosamente.');
+        })
+        .catch(error => {
+          console.error('Error al enviar solicitud:', error);
+          Alert.alert('Error', 'Hubo un error al enviar la solicitud de amistad. Por favor, inténtalo de nuevo.');
+        });
     }
   };
 
-  const renderItem = ({ item }) => (
+  const renderUserItem = ({ item }) => (
     <TouchableOpacity style={styles.userContainer}>
       <View style={styles.avatarContainer}>
-        {item.avatar ? (
-          <Image style={styles.avatar} source={item.avatar} />
+        {item.Avatar ? (
+          <Image style={styles.avatar} source={{ uri: item.Avatar }} />
         ) : (
           <View style={styles.avatarPlaceholder}>
             <Text style={styles.avatarPlaceholderText}>Avatar no disponible</Text>
           </View>
         )}
       </View>
-      <Text style={styles.username}>{item.username}</Text>
-      {item.userID && (
-        <TouchableOpacity onPress={() => addFriend(item.userID)} style={styles.addButton}>
-          <Text style={styles.addButtonText}>Agregar amigo</Text>
+      <View style={styles.userInfo}>
+        <Text style={styles.username}>{item.Username}</Text>
+        <TouchableOpacity style={styles.addButton} onPress={() => handleSendRequest(item.UserID)}>
+          <Text style={styles.addButtonText}>+</Text>
         </TouchableOpacity>
-      )}
+      </View>
     </TouchableOpacity>
   );
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3498db" />
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Descubre nuevos usuarios</Text>
-
-      <FlatList
-        data={users}
-        keyExtractor={(item) => item.userID.toString()}
-        renderItem={renderItem}
-        horizontal
-        showsHorizontalScrollIndicator={false}
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Buscar usuarios"
+        value={searchQuery}
+        onChangeText={setSearchQuery}
       />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#3498db" />
+        </View>
+      ) : (
+        <FlatList
+          data={handleSearch()}
+          keyExtractor={(item) => item.UserID.toString()}
+          renderItem={renderUserItem}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.userList}
+        />
+      )}
     </View>
   );
 };
@@ -79,46 +99,47 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#fff',
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 16,
     color: '#3498db',
   },
-  userContainer: {
-    marginRight: 16,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  userList: {
+    marginTop: 8,
+  },
+  userContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   avatarContainer: {
     width: 100,
     height: 100,
     borderRadius: 50,
     overflow: 'hidden',
-    marginBottom: 8,
+    marginRight: 16,
   },
   avatar: {
     width: '100%',
     height: '100%',
   },
   username: {
-    textAlign: 'center',
-    color: '#555',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
-  addButton: {
-    marginTop: 4,
-    backgroundColor: '#3498db',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 4,
-  },
-  addButtonText: {
-    color: '#fff',
+  userInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   avatarPlaceholder: {
     width: '100%',
@@ -130,6 +151,23 @@ const styles = StyleSheet.create({
   avatarPlaceholderText: {
     color: '#fff',
     fontSize: 16,
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 16,
+  },
+  addButton: {
+    backgroundColor: '#3498db',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20, // Ajuste del radio del borde para hacer un botón circular
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 20, // Ajuste del tamaño de fuente para hacer el botón más grande
   },
 });
 
